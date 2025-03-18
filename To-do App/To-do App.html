@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <title>To-do App</title>
+
+    <style>
+        .btn-danger {
+            margin-left: 1.5em;
+        }
+    </style>
+</head>
+<body>
+    <header id="main-header" class="bg-success text-white p-4 mb-5">
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-12 col-md-6 col-lg-4">
+                <h1 id="header-title">Task List</h1>
+            </div>
+            <div class="col-md-6 align-self-center">
+                <input type="text" class="form-control" id="search" placeholder="Search tasks from the list">
+            </div>
+          </div>
+        </div>
+    </header>
+
+    <div class="container mb-4">
+        <div class="card card-body shadow-lg border-success">
+            <h2 class="title">Add Tasks</h2>
+            <form id="form" class="form-inline mb-3">
+                <input type="text" id="task" class="form-control mr-2 border border-3">
+                <input type="submit" class="btn btn-dark" value="Submit" style="margin-top: 10px;">
+            </form>
+
+            <h2 class="title">Tasks</h2>
+            <ul id="tasks" class="list-group"></ul>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById("form");
+        const ul = document.getElementById("tasks");
+        const search = document.getElementById("search");
+
+        document.addEventListener("DOMContentLoaded", loadTasks);
+
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const taskInput = document.getElementById("task").value.trim();
+            if (taskInput === "") return;
+
+            addTask(taskInput);
+            persistAddChanges(taskInput);
+
+            document.getElementById("task").value = "";
+        });
+
+        function addTask(task) {
+            const li = document.createElement("li");
+            li.classList = "list-group-item";
+            li.textContent = task;
+            ul.appendChild(li);
+
+            let btnRemove = document.createElement("button");
+            btnRemove.classList = "btn btn-danger btn-sm float-right delete";
+            btnRemove.textContent = "X";
+            li.append(btnRemove);
+        }
+
+        ul.addEventListener("click", (e) => {
+            if (e.target.classList.contains("delete")) {
+                if (confirm("Are you sure?")) {
+                    const li = e.target.parentElement;
+                    const taskText = li.firstChild.textContent.trim();
+                    persistRemoveChanges(taskText)
+                    li.remove();
+                }
+            }
+        });
+
+        search.addEventListener("keyup", (e) => {
+            let searchInput = search.value.toLowerCase();
+            const tasks = document.querySelectorAll(".list-group-item");
+
+            tasks.forEach((task) => {
+                const text = task.firstChild.textContent.toLocaleLowerCase();
+
+                if (text.includes(searchInput)) {
+                    task.style.display = "block";
+                } else {
+                    task.style.display = "none";
+                }
+            });
+        });
+
+        function persistAddChanges(task) {
+            let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+            tasks.push(task);
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        };
+
+        function loadTasks() {
+            let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+            tasks.forEach(task => addTask(task));
+        };
+
+        function persistRemoveChanges(task) {
+            let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+            tasks = tasks.filter(t => t !== task);
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        };
+    </script>
+</body>
+</html>
